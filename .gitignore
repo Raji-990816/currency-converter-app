@@ -1,2 +1,35 @@
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Ignore Node.js dependencies
+/backend/node_modules/
+/frontend/node_modules/
+
+# Ignore environment files (VERY IMPORTANT for security)
 .env
+/backend/.env
+/frontend/.env
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore editor & OS-specific files
+.vscode/
+.idea/
+*.swp
+
+# Ignore build and compiled files
+/build
+/dist
+
+# Ignore logs & debugging files
+npm-debug.log*
+yarn-error.log*
+debug.log
+
+# Ignore test coverage reports
+/coverage
+
+# Ignore cache & temp files
+/tmp
+/.cache
