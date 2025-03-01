@@ -45,7 +45,7 @@ Clone the repository to your local machine:
 
 ```sh
 git clone https://github.com/Raji-990816/currency-converter-app.git
-cd currency-converter
+cd currency-converter-app
 ```
 
 ### **2️⃣ Backend Setup**
@@ -64,6 +64,7 @@ In the `backend` folder, create a `.env` file with the following content:
 ```
 MONGO_URI=your-mongodb-atlas-uri
 EXCHANGE_RATE_API_KEY=your-api-key
+PORT=your-portnumber
 ```
 
 - Replace `your-mongodb-atlas-uri` with your MongoDB Atlas connection URI.  
