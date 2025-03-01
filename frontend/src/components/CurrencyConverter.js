@@ -123,7 +123,7 @@ const CurrencyConverter = () => {
         onClick={handleConvert}
         style={{ marginBottom: "20px" }}
       >
-        Transfer
+        Convert
       </Button>
 
         {/* Converted Amount */}
@@ -139,7 +139,7 @@ const CurrencyConverter = () => {
       </Typography>
       <Box>
         {history.map((item) => (
-          <Box key={item._id} display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <Box key={item._id} display="flex" justifyContent="space-between" alignItems="-moz-initial" mb={1}>
             <Typography variant="body1" color="textSecondary" sx={{ flexGrow: 1 }}>
                 {item.amount} {item.from} → {item.convertedAmount} {item.to}
             </Typography>
@@ -168,7 +168,7 @@ const CurrencyConverter = () => {
       {/* Snackbar for error messages */}
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={6500}
         onClose={handleCloseSnackbar}
         message={error}
       />
