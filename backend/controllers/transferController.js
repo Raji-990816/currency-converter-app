@@ -15,7 +15,7 @@ const createTransfer = async (req, res) => {
     const apiKey = process.env.EXCHANGE_RATE_API_KEY;
     const { data } = await axios.get(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/${from}`);
     const rate = data.conversion_rates[to];
-    const convertedAmount = amount * rate;
+    const convertedAmount = (amount * rate).toFixed(3);
 
     try {
         const createTransfer = new Transfer({ from, to, amount, convertedAmount, rate });
