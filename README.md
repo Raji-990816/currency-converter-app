@@ -44,8 +44,8 @@ This is a **full-stack MERN application** that allows users to convert currencie
 Clone the repository to your local machine:
 
 ```sh
-git clone https://github.com/your-username/currency-converter.git
-cd currency-converter
+git clone https://github.com/Raji-990816/currency-converter-app.git
+cd currency-converter-app
 ```
 
 ### **2️⃣ Backend Setup**
@@ -64,12 +64,13 @@ In the `backend` folder, create a `.env` file with the following content:
 ```
 MONGO_URI=your-mongodb-atlas-uri
 EXCHANGE_RATE_API_KEY=your-api-key
+PORT=your-portnumber
 ```
 
 - Replace `your-mongodb-atlas-uri` with your MongoDB Atlas connection URI.  
   - **Create a MongoDB Atlas cluster** if you don’t already have one, and get the connection URI from the Atlas dashboard.
   
-- Replace `your-api-key` with an API key from a currency exchange rates provider, such as [ExchangeRate-API](https://www.exchangerate-api.com/) or [Open Exchange Rates](https://openexchangerates.org/).
+- Replace `your-api-key` with an API key from a currency exchange rates provider, such as [ExchangeRate-API](https://www.exchangerate-api.com/).
 
 Start the backend server:
 
