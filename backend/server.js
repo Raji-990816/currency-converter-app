@@ -1,5 +1,4 @@
 require('dotenv').config();
-const compression = require('compression');
 const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,7 +8,7 @@ const transfersRouter = require('./routers/transferRouters');
 const app = express();
 
 //middleware
-app.use(compression());
+app.use(cors()); 
 app.use(express.json());  
 app.use(express.urlencoded({ extended: true }));  
 

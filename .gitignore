@@ -33,4 +33,3 @@ debug.log
 # Ignore cache & temp files
 /tmp
 /.cache
-node_modules
