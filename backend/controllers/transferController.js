@@ -4,8 +4,37 @@ const axios = require('axios');
 
 //get all transfers
 const getTransfers = async (req, res) => {
-    const getTransfers = await Transfer.find({}).sort({ createdAt: -1 });
-    res.status(200).json(getTransfers);
+    try{
+        //Parse `page` and `limit` from query parameters, with defaults
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        //Calculate how many documents to skip
+        const skip = (page - 1)*limit;
+
+        //fetch needed fields, paginated
+        const transfers = await Transfer.find()
+            .skip(skip)
+            .limit(limit)
+            .select('from to amount convertedAmount rate createdAt')
+            .sort({createdAt: -1});
+
+        //count total documents
+        const total = await Transfer.countDocuments();
+
+        //return paginated response
+        res.status(200).json({
+            success: true,
+            page,
+            totalPages:Math.ceil(total/limit),
+            totalItems: total,
+            items: transfers
+        });
+
+
+    }catch(error){
+        res.status(500).json({ success: false, message: 'Server error', error });
+    }
 };
 
 //create a transfer

@@ -10,23 +10,42 @@ const CurrencyConverter = () => {
   const [amount, setAmount] = useState(0);
   const [converted, setConverted] = useState(null);
   const [history, setHistory] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(null); 
-  const [openSnackbar, setOpenSnackbar] = useState(false); 
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const LIMIT = 8; 
 
   useEffect(() => {
-    fetchHistory();
-  }, []);
+    fetchHistory(currentPage, LIMIT);
+  }, [currentPage]);
 
   // Fetch transfer history with error handling
-  const fetchHistory = async () => {
+  const fetchHistory = async (page, limit) => {
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/transfers`);
-      setHistory(data);
+      const { data } = await axios.get(`${API_BASE_URL}/transfers?page=${page}&limit=${limit}`);
+      // Defensive check
+      if (data && Array.isArray(data.items)) {
+        setHistory(data.items);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(data.page || 1);
+      } else {
+        setHistory([]);
+      }
+      console.log(`Fetching: ${API_BASE_URL}/transfers?page=${page}&limit=${limit}`);
+      
     } catch (err) {
       setError("Failed to fetch history. Please try again later.");
-      setOpenSnackbar(true); 
+      setOpenSnackbar(true);
     }
   };
+
+  //handle page changings
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };  
 
   // Handle conversion with error handling and validation 
   const handleConvert = async () => {
@@ -39,7 +58,7 @@ const CurrencyConverter = () => {
     try {
       const { data } = await axios.post(`${API_BASE_URL}/transfers`, { from, to, amount });
       setConverted(data.convertedAmount); 
-      fetchHistory();
+      fetchHistory(currentPage, LIMIT);
     } catch (err) {
       setError("Failed to convert currency. Please check your input and try again.");
       setOpenSnackbar(true); 
@@ -50,7 +69,7 @@ const CurrencyConverter = () => {
   const handleRevoke = async (id) => {
     try {
       await axios.delete(`${API_BASE_URL}/transfers/${id}`);
-      fetchHistory();
+      fetchHistory(currentPage, LIMIT);
     } catch (err) {
       setError("Failed to revoke transfer. Please try again.");
       setOpenSnackbar(true); 
@@ -65,7 +84,7 @@ const CurrencyConverter = () => {
   return (
     <Container maxWidth="sm" style={{ textAlign: "center", marginTop: "50px" }}>
         {/* Title */}
-      <Typography variant="h2" color="darkblue" gutterBottom>
+      <Typography variant="h4" color="primary" gutterBottom>
         Currency Converter
       </Typography>
 
@@ -102,7 +121,7 @@ const CurrencyConverter = () => {
         type="number"
         label="Amount"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={(e) => setAmount(Number(e.target.value))}
         fullWidth
         variant="outlined"
         style={{ marginBottom: "20px" }}
@@ -113,12 +132,12 @@ const CurrencyConverter = () => {
       <Button
         variant="contained"
         sx={{
-            backgroundColor: "#00008B",
-            color: "white",
-            "&:hover": {
-              backgroundColor: "#030380", 
-            },
-          }}
+          bgcolor: "primary.main",
+          color: "white",
+          "&:hover": {
+            bgcolor: "primary.dark"
+          }
+        }}
         fullWidth
         onClick={handleConvert}
         style={{ marginBottom: "20px" }}
@@ -128,42 +147,92 @@ const CurrencyConverter = () => {
 
         {/* Converted Amount */}
       {converted && (
-        <Typography variant="h6" color="#07B150" style={{ marginBottom: "20px" }}>
+        <Typography variant="subtitle1" color="success" style={{ marginBottom: "20px" }}>
           Converted: {converted} {to}
         </Typography>
       )}
         
         {/* Transfer History */}
-      <Typography variant="h4" color="darkblue" gutterBottom>
+      <Typography variant="h6" color="info.main" gutterBottom>
         Transfer History
       </Typography>
+
       <Box>
-        {history.map((item) => (
-          <Box key={item._id} display="flex" justifyContent="space-between" alignItems="-moz-initial" mb={1}>
-            <Typography variant="body1" color="textSecondary" sx={{ flexGrow: 1 }}>
+        {history.length === 0 ? (
+          <Typography variant="body2" color="textSecondary">
+            No transfers found.
+          </Typography>
+        ) : (
+          history.map((item) => (
+            <Box
+              key={item._id}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              p={1}
+              mb={1}
+              border="1px solid #e0e0e0"
+              borderRadius="6px"
+            >
+              <Typography variant="body1" sx={{ flexGrow: 1 }}>
                 {item.amount} {item.from} → {item.convertedAmount} {item.to}
-            </Typography>
-        
-            <Typography variant="body2" color="textSecondary" sx={{ marginRight: 2 }}>
+              </Typography>
+
+              <Typography variant="body2" color="textSecondary" sx={{ marginRight: 2 }}>
                 {new Date(item.createdAt).toLocaleString()}
-            </Typography>
-        
-            <Button 
-                size="small"  
+              </Typography>
+
+              <Button
+                size="small"
+                variant="outlined"
                 sx={{
-                backgroundColor: "#de0404", 
-                color: "white",
-                "&:hover": {
-                    backgroundColor: "#c40404", 
-              } ,
+                  color: "red",
+                  borderColor: "red",
+                  "&:hover": {
+                    backgroundColor: "red",
+                    color: "white",
+                    borderColor: "red",
+                  },
                 }}
                 onClick={() => handleRevoke(item._id)}
-            >
+              >
                 Revoke
-            </Button>
-          </Box>
-            ))}
+              </Button>
+            </Box>
+          ))
+        )}
       </Box>
+
+    {/* Pagination Controls */}
+    <Box mt={3} display="flex" justifyContent="center" alignItems="center" flexWrap="wrap" gap={1}>
+      <Button
+        variant="outlined"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </Button>
+
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <Button
+          key={page}
+          variant={page === currentPage ? "contained" : "outlined"}
+          color={page === currentPage ? "primary" : "inherit"}
+          onClick={() => handlePageChange(page)}
+        >
+          {page}
+        </Button>
+      ))}
+
+      <Button
+        variant="outlined"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </Button>
+    </Box>
+
 
       {/* Snackbar for error messages */}
       <Snackbar
