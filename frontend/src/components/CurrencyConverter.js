@@ -7,11 +7,12 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const CurrencyConverter = () => {
   const [from, setFrom] = useState("USD");
   const [to, setTo] = useState("LKR");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState();
   const [converted, setConverted] = useState(null);
   const [history, setHistory] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null); 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const LIMIT = 8; 
@@ -32,7 +33,6 @@ const CurrencyConverter = () => {
       } else {
         setHistory([]);
       }
-      console.log(`Fetching: ${API_BASE_URL}/transfers?page=${page}&limit=${limit}`);
       
     } catch (err) {
       setError("Failed to fetch history. Please try again later.");
@@ -50,18 +50,22 @@ const CurrencyConverter = () => {
   // Handle conversion with error handling and validation 
   const handleConvert = async () => {
     if (!amount || amount <= 0) {
-      setError("Please enter a valid amount greater than 0.");
+      setError("Please enter a valid amount.");
       setOpenSnackbar(true);
       return;
     }
 
     try {
+      setLoading(true);
       const { data } = await axios.post(`${API_BASE_URL}/transfers`, { from, to, amount });
       setConverted(data.convertedAmount); 
       fetchHistory(currentPage, LIMIT);
     } catch (err) {
-      setError("Failed to convert currency. Please check your input and try again.");
-      setOpenSnackbar(true); 
+      const errorMsg = err.response?.data?.message || "Failed to convert currency. Please try again.";
+      setError(errorMsg);
+      setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,18 +120,26 @@ const CurrencyConverter = () => {
         </Select>
       </Box>
         {/* Amount Field and Transfer Button*/}
-      <TextField
-        required={true}
-        type="number"
-        label="Amount"
-        value={amount}
-        onChange={(e) => setAmount(Number(e.target.value))}
-        fullWidth
-        variant="outlined"
-        style={{ marginBottom: "20px" }}
-        error={amount <= 0} 
-        helperText={amount <= 0 ? "Amount must be greater than 0." : ""}
-      />
+        <TextField
+          required={true}
+          type="number"
+          label="Amount"
+          value={amount === 0 ? "" : amount}  
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "") {
+              setAmount(0);
+            } else {
+              setAmount(Number(value));
+            }
+          }}
+          fullWidth
+          variant="outlined"
+          style={{ marginBottom: "20px" }}
+          error={amount <= 0 && amount !== ""}
+          helperText={amount <= 0 && amount !== "" ? "Amount must be greater than 0." : ""}
+        />
+
 
       <Button
         variant="contained"
@@ -140,10 +152,12 @@ const CurrencyConverter = () => {
         }}
         fullWidth
         onClick={handleConvert}
+        disabled={loading}
         style={{ marginBottom: "20px" }}
       >
-        Convert
+        {loading ? "Converting..." : "Convert"}
       </Button>
+
 
         {/* Converted Amount */}
       {converted && (
